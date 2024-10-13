@@ -8,15 +8,10 @@
             Home
           </router-link>
         </li>
-        <li>
-          <router-link to="/login">
-            About
-          </router-link>
-        </li>
 
         <!-- Dropdown Admin Menu -->
         <li
-          v-if="Admin == 'admin'"
+          v-if="Admin === 'admin'"
           class="dropdown"
           @mouseenter="toggleDropdown"
           @mouseleave="toggleDropdown"
@@ -24,12 +19,12 @@
           <a href="#" class="dropdown-link">Admin</a>
           <ul v-if="isDropdownOpen" class="dropdown-menu">
             <li>
-              <router-link to="/editproducts">
+              <router-link to="/admin/EditProducts">
                 Edit Product
               </router-link>
             </li>
             <li>
-              <router-link to="/orders">
+              <router-link to="/admin/Orders">
                 Orders
               </router-link>
             </li>
@@ -37,9 +32,26 @@
         </li>
 
         <li>
-          <router-link to="/Profile">
+          <router-link to="/user/Profile">
             Profile
           </router-link>
+        </li>
+
+        <!-- เพิ่มไอคอนตะกร้าสินค้า -->
+        <li @mouseenter="toggleCartPreview" @mouseleave="toggleCartPreview">
+          <router-link to="/cart">
+            <i class="fa fa-shopping-cart" /> Cart ({{ cartItemCount }})
+          </router-link>
+          <!-- Cart Preview -->
+          <div v-if="isCartPreviewOpen" class="cart-preview">
+            <div
+              v-for="item in cartItems"
+              :key="item.id"
+              class="cart-item-preview"
+            >
+              <p>{{ item.name }} ({{ item.quantity }})</p>
+            </div>
+          </div>
         </li>
       </ul>
 
@@ -58,23 +70,18 @@
             Home
           </router-link>
         </li>
-        <li>
-          <router-link to="/login">
-            About
-          </router-link>
-        </li>
 
         <!-- Dropdown Admin Menu in Mobile -->
-        <li v-if="Admin == 'admin'" class="dropdown" @click="toggleDropdown">
+        <li v-if="Admin === 'admin'" class="dropdown" @click="toggleDropdown">
           <a href="#" class="dropdown-link">Admin</a>
           <ul v-if="isDropdownOpen" class="dropdown-menu">
             <li>
-              <router-link to="/editproducts">
+              <router-link to="/admin/EditProducts">
                 Edit Product
               </router-link>
             </li>
             <li>
-              <router-link to="/orders">
+              <router-link to="/admin/Orders">
                 Orders
               </router-link>
             </li>
@@ -86,27 +93,35 @@
             Profile
           </router-link>
         </li>
+        <li>
+          <router-link to="/cart">
+            <i class="fa fa-shopping-cart" /> Cart ({{ cartItemCount }})
+          </router-link>
+        </li>
       </ul>
     </div>
   </header>
 </template>
 
 <script>
+import { mapGetters } from 'vuex' // ใช้ mapGetters เพื่อดึงจำนวนสินค้าในตะกร้าจาก Vuex
+
 export default {
   data () {
     return {
       isMenuOpen: false,
       isDropdownOpen: false,
+      isCartPreviewOpen: false,
       Admin: '',
       searchQuery: ''
     }
   },
+  computed: {
+    ...mapGetters('cart', ['cartItemCount']) // ดึง cartItemCount จาก store
+  },
   mounted () {
     const role = localStorage.getItem('role')
-    console.log('Role from localStorage:', role) // ตรวจสอบ role ที่ได้จาก localStorage
-
     this.Admin = role
-    console.log('Is Admin:', this.Admin) // ตรวจสอบค่าของ Admin
   },
   methods: {
     toggleMenu () {
@@ -115,14 +130,15 @@ export default {
     toggleDropdown () {
       this.isDropdownOpen = !this.isDropdownOpen
     },
-    search () {
-      console.log('Searching for:', this.searchQuery)
+    toggleCartPreview () {
+      this.isCartPreviewOpen = !this.isCartPreviewOpen
     }
   }
 }
 </script>
 
 <style scoped>
+/* เพิ่มสไตล์ที่ใช้ใน header */
 .app-header {
   background-color: #fff;
   color: #333;
@@ -147,6 +163,11 @@ export default {
   color: #333;
   text-decoration: none;
   font-weight: bold;
+}
+
+/* เพิ่มสไตล์สำหรับไอคอนตะกร้าสินค้า */
+.fa-shopping-cart {
+  margin-right: 8px;
 }
 
 /* Dropdown Menu Styling */
@@ -231,5 +252,25 @@ export default {
     text-decoration: none;
     font-weight: bold;
   }
+}
+.cart-preview {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 200px;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cart-item-preview {
+  margin-bottom: 5px;
+}
+
+.cart-item-preview p {
+  margin: 0;
+  font-size: 14px;
 }
 </style>

@@ -111,7 +111,7 @@ export default {
       }
     },
     goToLogin () {
-      this.$router.push('/')
+      this.$router.push('/login')
     }
   }
 }

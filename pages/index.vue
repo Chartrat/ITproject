@@ -1,180 +1,258 @@
 <template>
-  <div class="login-container">
-    <div class="login-box">
-      <h2>Login</h2>
-      <form @submit.prevent="login">
-        <div class="input-group">
-          <label for="username">Username:</label>
-          <input v-model="username" type="text" required>
+  <div>
+    <div class="main-container">
+      <!-- ProductList ด้านซ้าย -->
+      <div class="product-list">
+        <Slideshow />
+        <div>
+          <h1>รายการสินค้า</h1>
+          <div class="products-container">
+            <v-row class="justify-start">
+              <v-col md="3">
+                <CategorySidebar />
+              </v-col>
+              <v-col md="9">
+                <v-row class="justify-start">
+                  <div
+                    v-for="product in filteredProducts"
+                    :key="product.product_id"
+                    class="product-card"
+                    @click="goToProductDetails(product.product_id)"
+                  >
+                    <img
+                      :src="product.image_url"
+                      alt="product.name"
+                      class="product-image"
+                    >
+                    <h3>{{ product.name }}</h3>
+                    <p>ราคา: {{ product.price }} บาท</p>
+                    <div class="card-actions">
+                      <button
+                        class="fav-btn"
+                        @click.stop="toggleFavorite(product)"
+                      >
+                        <!-- ไอคอนหัวใจ -->
+                        <i
+                          :class="
+                            product.isFavorite ? 'fas fa-heart' : 'far fa-heart'
+                          "
+                        />
+                      </button>
+                      <button
+                        class="add-to-cart-btn"
+                        @click.stop="addToCart(product)"
+                      >
+                        <!-- ปุ่มตะกร้า -->
+                        <i class="fas fa-shopping-cart" /> เพิ่มลงตะกร้า
+                      </button>
+                    </div>
+                  </div>
+                </v-row>
+              </v-col>
+            </v-row>
+          </div>
         </div>
-        <div class="input-group">
-          <label for="password">Password:</label>
-          <input v-model="password" type="password" required>
-        </div>
-        <p v-if="errorMessage" class="error">
-          {{ errorMessage }}
-        </p>
-        <button type="submit" class="login-button">
-          Login
-        </button>
-      </form>
-      <!-- ปุ่ม Register ใหม่ -->
-      <button class="register-button" @click="goToRegister">
-        Register
-      </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
+import { mapActions } from 'vuex'
+import { jwtDecode } from 'jwt-decode'
+import Slideshow from '~/components/Slideshow.vue'
+import CategorySidebar from '~/components/CategorySidebar.vue'
 
 export default {
-  layout: 'blank',
-
+  components: {
+    Slideshow,
+    CategorySidebar
+  },
   data () {
     return {
-      username: '',
-      password: '',
-      errorMessage: ''
+      products: [],
+      categories: [],
+      selectedCategories: [],
+      priceRange: 5000123123
     }
   },
-  created () {
-    // ตรวจสอบว่าโค้ดกำลังทำงานอยู่ใน client-side หรือไม่
-    if (process.client) {
-      const token = localStorage.getItem('token')
-      if (token) {
-        // ถ้ามี token ให้ redirect ไปยังหน้า home
-        this.$router.push({ name: 'home' })
-      }
+  async fetch () {
+    try {
+      const response = await this.$axios.get('http://localhost:8000/products/')
+      this.products = response.data.result.map(product => ({
+        ...product,
+        isFavorite: false // เพิ่มสถานะ favorite ใน product
+      }))
+    } catch (error) {
+      console.error('Error fetching products:', error)
     }
+
+    // Fetch categories
+    try {
+      const categoriesResponse = await this.$axios.get(
+        'http://localhost:8000/categories/'
+      )
+      this.categories = categoriesResponse.data.result
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  },
+  computed: {
+    filteredProducts () {
+      return this.products.filter((product) => {
+        return (
+          (this.selectedCategories.length === 0 ||
+            this.selectedCategories.includes(product.category)) &&
+          product.price <= this.priceRange
+        )
+      })
+    }
+  },
+  customerId () {
+    if (this.token) {
+      const decoded = jwtDecode(this.token)
+      return decoded.customerId // ดึง UserID จาก token
+    }
+    return null
   },
   methods: {
-    async login () {
-      try {
-        const response = await axios.post('http://localhost:8000/user/login', {
-          UserName: this.username,
-          Password: this.password
-        })
-
-        // ตรวจสอบว่ามี token และข้อมูลผู้ใช้หรือไม่
-        if (response.data.status === 'success' && response.data.token) {
-          localStorage.setItem('token', response.data.token)
-          const result = Array.isArray(response.data.result) ? response.data.result : [response.data.result] // เช็คว่า result เป็น array หรือไม่
-
-          // ล็อก Role ของผู้ใช้
-          // console.log('Userผ Role:', result[0].Role) // ล็อก Role ของผู้ใช้
-          localStorage.setItem('role', result[0].Role)
-
-          this.$router.push({ name: 'home' })
-        } else {
-          // หากไม่สำเร็จให้แสดงข้อความผิดพลาด
-          this.errorMessage =
-            response.data.message || 'Username หรือ Password ไม่ถูกต้อง'
-        }
-      } catch (error) {
-        // หากมีการตอบกลับผิดพลาดจาก server
-        if (error.response) {
-          // ตรวจสอบ response status
-          if (error.response.status === 401) {
-            this.errorMessage = 'Username หรือ Password ไม่ถูกต้อง'
-          } else {
-            this.errorMessage = 'เกิดข้อผิดพลาดขณะเข้าสู่ระบบ กรุณาลองอีกครั้ง'
-          }
-        } else {
-          this.errorMessage = 'เกิดข้อผิดพลาดขณะเข้าสู่ระบบ กรุณาลองอีกครั้ง'
-        }
-      }
+    ...mapActions('cart', ['addToCart']),
+    goToProductDetails (productId) {
+      this.$router.push(`/product/${productId}`)
     },
-
-    // เพิ่มเมธอดสำหรับไปยังหน้า Register
-    goToRegister () {
-      this.$router.push({ name: 'register' })
+    toggleFavorite (product) {
+      product.isFavorite = !product.isFavorite // เปลี่ยนสถานะ favorite
     }
   }
 }
 </script>
+
 <style scoped>
-.login-container {
+.main-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f7f7f7;
+  justify-content: space-between;
+  gap: 20px;
 }
 
-.login-box {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
+.product-list {
+  flex-grow: 1;
+  padding: 16px;
+}
+
+.products-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+.product-card {
+  position: relative;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 10px;
+  width: 280px; /* กำหนดขนาดความกว้างเท่ากันทุกการ์ด */
   text-align: center;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%; /* กำหนดความสูงเต็มสำหรับการ์ด */
 }
 
-.input-group {
-  margin-bottom: 1.5rem;
-  text-align: left;
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  border-color: #a67c52;
 }
 
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-}
-
-input {
+.product-image {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  transition: transform 0.3s ease;
 }
 
-input:focus {
-  border-color: #007bff;
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 8px;
+  white-space: nowrap; /* ป้องกันไม่ให้ข้อความขึ้นบรรทัดใหม่ */
+  overflow: hidden; /* ซ่อนข้อความที่เกินขอบ */
+  text-overflow: ellipsis; /* แสดง ... เมื่อข้อความยาวเกินไป */
+}
+
+p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 16px;
+  white-space: nowrap; /* ป้องกันไม่ให้ข้อความขึ้นบรรทัดใหม่ */
+  overflow: hidden; /* ซ่อนข้อความที่เกินขอบ */
+  text-overflow: ellipsis; /* แสดง ... เมื่อข้อความยาวเกินไป */
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: auto;
+}
+
+.add-to-cart-btn {
+  background-color: #a67c52;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* ปุ่มอยู่กลางเสมอ */
+  transition: background-color 0.3s ease;
+  width: 80%;
+}
+
+.add-to-cart-btn i {
+  margin-right: 8px;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #8e653f;
+}
+
+.fav-btn {
+  background-color: transparent;
+  border: none;
+  color: #a67c52;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.fav-btn:hover {
+  color: #8e653f;
+}
+
+.far.fa-heart {
+  color: #ccc;
+}
+
+.fas.fa-heart {
+  color: #a67c52;
+}
+
+button:focus {
   outline: none;
-}
-
-.login-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.login-button:hover {
-  background-color: #0056b3;
-}
-
-/* ปุ่ม Register */
-.register-button {
-  width: 100%;
-  padding: 0.75rem;
-  margin-top: 1rem;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.register-button:hover {
-  background-color: #218838;
-}
-
-.error {
-  color: white;
-  margin-top: 1rem;
-  font-weight: bold;
 }
 </style>
