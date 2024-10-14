@@ -1,26 +1,35 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <h2>Login</h2>
+      <h2>เข้าสู่ระบบ</h2>
       <form @submit.prevent="login">
         <div class="input-group">
-          <label for="username">Username:</label>
-          <input v-model="username" type="text" required>
+          <label for="username">ชื่อผู้ใช้:</label>
+          <input
+            v-model="username"
+            type="text"
+            required
+            placeholder="กรอกชื่อผู้ใช้"
+          >
         </div>
         <div class="input-group">
-          <label for="password">Password:</label>
-          <input v-model="password" type="password" required>
+          <label for="password">รหัสผ่าน:</label>
+          <input
+            v-model="password"
+            type="password"
+            required
+            placeholder="กรอกรหัสผ่าน"
+          >
         </div>
         <p v-if="errorMessage" class="error">
           {{ errorMessage }}
         </p>
         <button type="submit" class="login-button">
-          Login
+          เข้าสู่ระบบ
         </button>
       </form>
-      <!-- ปุ่ม Register ใหม่ -->
       <button class="register-button" @click="goToRegister">
-        Register
+        สมัครสมาชิก
       </button>
     </div>
   </div>
@@ -31,7 +40,6 @@ import axios from 'axios'
 
 export default {
   layout: 'blank',
-
   data () {
     return {
       username: '',
@@ -40,11 +48,9 @@ export default {
     }
   },
   created () {
-    // ตรวจสอบว่าโค้ดกำลังทำงานอยู่ใน client-side หรือไม่
     if (process.client) {
       const token = localStorage.getItem('token')
       if (token) {
-        // ถ้ามี token ให้ redirect ไปยังหน้า home
         this.$router.push('/')
       }
     }
@@ -57,61 +63,58 @@ export default {
           Password: this.password
         })
 
-        // ตรวจสอบว่ามี token และข้อมูลผู้ใช้หรือไม่
         if (response.data.status === 'success' && response.data.token) {
           localStorage.setItem('token', response.data.token)
           const result = Array.isArray(response.data.result)
             ? response.data.result
-            : [response.data.result] // เช็คว่า result เป็น array หรือไม่
-
-          // ล็อก Role ของผู้ใช้
+            : [response.data.result]
           localStorage.setItem('role', result[0].Role)
-
           this.$router.push('/')
         } else {
-          // หากไม่สำเร็จให้แสดงข้อความผิดพลาด
           this.errorMessage =
             response.data.message || 'Username หรือ Password ไม่ถูกต้อง'
         }
       } catch (error) {
-        // หากมีการตอบกลับผิดพลาดจาก server
-        if (error.response) {
-          // ตรวจสอบ response status
-          if (error.response.status === 401) {
-            this.errorMessage = 'Username หรือ Password ไม่ถูกต้อง'
-          } else {
-            this.errorMessage = 'เกิดข้อผิดพลาดขณะเข้าสู่ระบบ กรุณาลองอีกครั้ง'
-          }
+        if (error.response && error.response.status === 401) {
+          this.errorMessage = 'Username หรือ Password ไม่ถูกต้อง'
         } else {
           this.errorMessage = 'เกิดข้อผิดพลาดขณะเข้าสู่ระบบ กรุณาลองอีกครั้ง'
         }
       }
     },
-
-    // เพิ่มเมธอดสำหรับไปยังหน้า Register
     goToRegister () {
-      this.$router.push({ name: 'register' })
+      this.$router.push('/user/register')
     }
   }
 }
 </script>
+
 <style scoped>
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f7f7f7;
+  background: linear-gradient(135deg, #6b8cff, #b8d3ff);
 }
 
 .login-box {
   background: #fff;
   padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
   text-align: center;
+  position: relative;
+}
+
+h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
 }
 
 .input-group {
@@ -123,39 +126,43 @@ label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
+  color: #555;
 }
 
 input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  background-color: #f9f9f9;
 }
 
 input:focus {
-  border-color: #007bff;
+  border-color: #6b8cff;
+  box-shadow: 0 0 10px rgba(107, 140, 255, 0.2);
   outline: none;
 }
 
 .login-button {
   width: 100%;
   padding: 0.75rem;
-  background-color: #007bff;
+  background-color: #6b8cff;
   color: white;
   border: none;
-  border-radius: 5px;
-  font-size: 1rem;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 .login-button:hover {
-  background-color: #0056b3;
+  background-color: #4c66cc;
+  box-shadow: 0 8px 20px rgba(107, 140, 255, 0.5);
 }
 
-/* ปุ่ม Register */
 .register-button {
   width: 100%;
   padding: 0.75rem;
@@ -163,19 +170,41 @@ input:focus {
   background-color: #28a745;
   color: white;
   border: none;
-  border-radius: 5px;
-  font-size: 1rem;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 .register-button:hover {
   background-color: #218838;
+  box-shadow: 0 8px 20px rgba(40, 167, 69, 0.5);
 }
 
 .error {
-  color: white;
+  color: red;
   margin-top: 1rem;
   font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  .login-box {
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+  }
+
+  input {
+    padding: 0.65rem;
+  }
+
+  .login-button,
+  .register-button {
+    font-size: 1rem;
+  }
 }
 </style>

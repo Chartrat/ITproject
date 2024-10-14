@@ -23,7 +23,7 @@
                       :src="product.image_url"
                       alt="product.name"
                       class="product-image"
-                    >
+                    />
                     <h3>{{ product.name }}</h3>
                     <p>ราคา: {{ product.price }} บาท</p>
                     <div class="card-actions">

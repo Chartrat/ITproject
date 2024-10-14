@@ -108,7 +108,8 @@ export const actions = {
   async updateCartItem ({ commit }, { productId, quantity }) {
     try {
       const token = localStorage.getItem('token')
-      const customerId = JSON.parse(atob(token.split('.')[1])).customerId
+      const tokendecode = jwtDecode(token)
+      const customerId = tokendecode[0].customer_id
 
       const response = await axios.put(
         'http://localhost:8000/cart/updateCartItem',
@@ -131,7 +132,8 @@ export const actions = {
   async removeFromCart ({ commit }, productId) {
     try {
       const token = localStorage.getItem('token')
-      const customerId = JSON.parse(atob(token.split('.')[1])).customerId
+      const tokendecode = jwtDecode(token)
+      const customerId = tokendecode[0].customer_id
 
       const response = await axios.delete(
         'http://localhost:8000/cart/removeFromCart',
