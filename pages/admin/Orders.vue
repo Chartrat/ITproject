@@ -46,7 +46,7 @@ export default {
   methods: {
     async fetchOrders () {
       // Replace with your API call to fetch orders
-      const response = await this.$http.get('/api/orders')
+      const response = await this.$http.get('/orders/getOrders')
       this.orders = response.data // Assume the response data is an array of orders
     },
     viewPaymentProof (item) {

@@ -9,6 +9,12 @@
           </router-link>
         </li>
 
+        <li>
+          <router-link to="/user/Orderuser">
+            Orders
+          </router-link>
+        </li>
+
         <!-- Dropdown Admin Menu -->
         <li
           v-if="Admin === 'admin'"

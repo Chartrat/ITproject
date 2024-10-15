@@ -64,7 +64,7 @@ export default {
         if (response.status === 200) {
           alert('ดำเนินการชำระเงินเรียบร้อยแล้ว')
           // สามารถเปลี่ยนหน้าได้ เช่น ไปยังหน้าคำสั่งซื้อสำเร็จ
-          this.$router.push('/order-success')
+          this.$router.push('/user/Orderuser')
         }
       } catch (error) {
         console.error('เกิดข้อผิดพลาดในการชำระเงิน:', error)
