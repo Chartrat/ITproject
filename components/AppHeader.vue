@@ -4,6 +4,15 @@
       <h1>Master Home</h1>
       <ul class="nav-links">
         <li>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search..."
+            class="search-bar"
+            @keypress.enter="performSearch"
+          >
+        </li>
+        <li>
           <router-link to="/">
             Home
           </router-link>
@@ -138,6 +147,11 @@ export default {
     },
     toggleCartPreview () {
       this.isCartPreviewOpen = !this.isCartPreviewOpen
+    },
+    performSearch () {
+      // การทำงานตัวอย่าง: แสดงผลหรือเปลี่ยนเส้นทางไปหน้าค้นหา
+      // นำทางไปยังหน้าผลการค้นหาโดยส่งค่า query ไปเป็นพารามิเตอร์
+      this.$router.push({ path: '/search', query: { q: this.searchQuery } })
     }
   }
 }
@@ -146,6 +160,8 @@ export default {
 <style scoped>
 /* เพิ่มสไตล์ที่ใช้ใน header */
 .app-header {
+  font-family: "Kanit", sans-serif;
+
   background-color: #fff;
   color: #333;
   padding: 1rem;
@@ -178,7 +194,7 @@ export default {
 
 /* Dropdown Menu Styling */
 .dropdown {
-  position: relative;
+  position: relative; /* ต้องมี position ที่กำหนดไว้สำหรับการใช้งาน z-index */
 }
 
 .dropdown-menu {
@@ -191,6 +207,7 @@ export default {
   padding: 0;
   margin: 0;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* เพิ่ม z-index เพื่อให้ dropdown อยู่บนสุด */
 }
 
 .dropdown-menu li {
@@ -258,7 +275,13 @@ export default {
     text-decoration: none;
     font-weight: bold;
   }
+
+  /* เพิ่ม z-index ให้กับ dropdown-menu ใน mobile-menu หากจำเป็น */
+  .mobile-menu .dropdown-menu {
+    z-index: 1000;
+  }
 }
+
 .cart-preview {
   position: absolute;
   background-color: white;
@@ -267,7 +290,7 @@ export default {
   width: 200px;
   top: 100%;
   right: 0;
-  z-index: 1000;
+  z-index: 999; /* ลด z-index ให้ต่ำกว่าดropdown-menu */
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -278,5 +301,18 @@ export default {
 .cart-item-preview p {
   margin: 0;
   font-size: 14px;
+}
+
+.search-bar {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 150px;
+}
+
+.search-bar:focus {
+  outline: none;
+  border-color: #333;
 }
 </style>

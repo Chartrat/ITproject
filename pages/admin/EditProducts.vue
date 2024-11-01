@@ -16,19 +16,16 @@
             dense
             hide-default-footer
           >
-            <!-- ใช้ v-slot:item สำหรับจัดการการแสดงข้อมูลภายในตาราง -->
             <template #item="{ item }">
               <tr>
                 <td>{{ item.name }}</td>
                 <td>{{ item.description }}</td>
                 <td>{{ item.price }}</td>
-                <td>{{ item.category }}</td>
+                <td>{{ getCategoryName(item.category_id) }}</td>
                 <td class="text-right">
-                  <!-- ปุ่มแก้ไขผลิตภัณฑ์ -->
                   <v-btn icon color="primary" @click="editProduct(item)">
                     <v-icon>mdi-pencil</v-icon>
                   </v-btn>
-                  <!-- ปุ่มยืนยันการลบผลิตภัณฑ์ -->
                   <v-btn
                     icon
                     color="red darken-2"
@@ -74,10 +71,13 @@
                 :rules="[rules.price]"
                 required
               />
+              <!-- เลือกหมวดหมู่ย่อย -->
               <v-select
-                v-model="currentProduct.category"
-                :items="categories"
-                label="หมวดหมู่"
+                v-model="currentProduct.category_id"
+                :items="subCategories"
+                item-text="name"
+                item-value="category_id"
+                label="หมวดหมู่ย่อย"
                 :rules="[rules.required]"
                 required
               />
@@ -145,7 +145,7 @@ export default {
         name: '',
         description: '',
         price: '',
-        category: '',
+        category_id: null,
         image_url: ''
       },
       products: [],
@@ -153,25 +153,40 @@ export default {
         { text: 'ชื่อผลิตภัณฑ์', value: 'name' },
         { text: 'คำอธิบาย', value: 'description' },
         { text: 'ราคา', value: 'price' },
-        { text: 'หมวดหมู่', value: 'category' },
+        { text: 'หมวดหมู่', value: 'category_id' },
         { text: 'จัดการ', value: 'actions', sortable: false }
       ],
       rules: {
         required: value => !!value || 'ต้องระบุ.',
         price: value => (value && !isNaN(value)) || 'ต้องเป็นตัวเลข.',
-        url: value =>
-          !value || /^https?:\/\//.test(value) || 'URL ไม่ถูกต้อง.'
+        url: value => !value || /^https?:\/\//.test(value) || 'URL ไม่ถูกต้อง.'
       },
-      categories: ['อิเล็กทรอนิกส์', 'เสื้อผ้า', 'เฟอร์นิเจอร์']
+      subCategories: [] // เก็บหมวดหมู่ย่อยทั้งหมด
     }
   },
   mounted () {
     this.fetchProducts()
+    this.fetchCategories()
   },
   methods: {
     async fetchProducts () {
       const response = await this.$axios.get('http://localhost:8000/products/')
       this.products = response.data.result
+    },
+    async fetchCategories () {
+      const response = await this.$axios.get(
+        'http://localhost:8000/categories/categories'
+      )
+      // กรองเฉพาะหมวดหมู่ย่อยที่มี parent_id ไม่เป็น null
+      this.subCategories = response.data.result.filter(
+        c => c.parent_id !== null
+      )
+    },
+    getCategoryName (categoryId) {
+      const category = this.subCategories.find(
+        c => c.category_id === categoryId
+      )
+      return category ? category.name : 'ไม่ทราบหมวดหมู่'
     },
     openAddProductDialog () {
       this.currentProduct = {
@@ -179,7 +194,7 @@ export default {
         name: '',
         description: '',
         price: '',
-        category: '',
+        category_id: null,
         image_url: ''
       }
       this.editMode = false
@@ -223,7 +238,6 @@ export default {
 </script>
 
 <style scoped>
-/* ปรับแต่งการจัดวางและเว้นระยะเพื่อให้ดูเรียบหรู */
 .v-card-title {
   font-weight: bold;
   color: #4a4a4a;

@@ -57,7 +57,7 @@ export default {
 h1 {
   margin-bottom: 16px;
   font-size: 28px;
-  font-family: "Playfair Display", serif;
+  font-family: "Kanit", sans-serif;
   color: #2c2c2c;
 }
 
@@ -65,7 +65,7 @@ p {
   margin-bottom: 12px;
   font-size: 18px;
   color: #666;
-  font-family: "Georgia", serif;
+  font-family: "Kanit", sans-serif;
 }
 
 p:last-child {

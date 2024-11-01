@@ -10,12 +10,11 @@ export const mutations = {
     const existingItem = state.items.find(
       item => item.productId === product.productId
     )
-
     if (existingItem) {
       existingItem.quantity += quantity
     } else {
       state.items.push({ ...product, quantity })
-    } // Closing the mutation properly
+    }
   },
   removeItemFromCart (state, productId) {
     state.items = state.items.filter(item => item.productId !== productId)
@@ -23,13 +22,10 @@ export const mutations = {
   setCart (state, items) {
     state.items = Array.isArray(items) ? items : []
   },
-
-  updateCartItem (state, updatedItem) {
-    const index = state.items.findIndex(
-      item => item.productId === updatedItem.productId
-    )
-    if (index !== -1) {
-      state.items[index] = updatedItem
+  updateCartItem (state, { productId, quantity }) {
+    const item = state.items.find(item => item.productId === productId)
+    if (item) {
+      item.quantity = quantity
     }
   }
 }
@@ -39,9 +35,6 @@ export const actions = {
     try {
       const token = localStorage.getItem('token')
       const tokendecode = jwtDecode(token)
-
-      console.log(tokendecode[0].customer_id)
-
       const customerId = tokendecode[0].customer_id
 
       const response = await axios.get(
@@ -52,39 +45,49 @@ export const actions = {
           }
         }
       )
-      console.log('test')
-      console.log('Response data:', response.data)
 
-      commit('setCart', response.data.result)
+      // Map backend data to frontend format
+      const items = response.data.result.map(item => ({
+        productId: item.product_id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image_url: item.image_url
+        // Include other properties as needed
+      }))
+
+      commit('setCart', items)
     } catch (error) {
       console.error('Error fetching cart:', error)
     }
   },
 
   async addToCart ({ commit, state, dispatch }, product) {
-    const cartItem = state.items.find(
-      item => item.productId === product.productId
+    // ค้นหาสินค้าในตะกร้า
+    const existingItem = state.items.find(
+      item => item.product_id === product.product_id
     )
-    console.log('cartItem:', product)
 
-    if (cartItem) {
-      commit('addItemToCart', { product, quantity: 1 })
+    if (existingItem) {
+      // หากพบสินค้าแล้ว ให้อัพเดทจำนวน
+      const newQuantity = existingItem.quantity + 1
+      await dispatch('updateCartItem', {
+        productId: product.product_id,
+        quantity: newQuantity
+      })
     } else {
+      // หากไม่พบสินค้า ให้เพิ่มสินค้าใหม่เข้าตะกร้าโดยตั้งจำนวนเริ่มต้นเป็น 1
       commit('addItemToCart', { product, quantity: 1 })
+      await dispatch('saveToDatabase', product)
     }
-    // Save to database
-    await dispatch('saveToDatabase', product) // Call function to save to DB
   },
 
   async saveToDatabase ({ state }, product) {
-    console.log('Product:', product)
-    console.log('State:', state)
     const token = localStorage.getItem('token')
     const tokendecode = jwtDecode(token)
-
-    console.log(tokendecode[0].customer_id)
-
     const customerId = tokendecode[0].customer_id
+    console.log('Customer ID:', customerId) // เพิ่มตรงนี้
+    console.log('Product ID:', product.productId) // และตรงนี้
 
     try {
       const response = await axios.post(
@@ -93,9 +96,13 @@ export const actions = {
           product_id: product.product_id,
           quantity: 1,
           customer_id: customerId
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
       )
-      console.log('Response data:', response.data)
 
       if (response.data.status !== 'success') {
         console.error('Error saving to database:', response.data.message)
@@ -110,10 +117,16 @@ export const actions = {
       const token = localStorage.getItem('token')
       const tokendecode = jwtDecode(token)
       const customerId = tokendecode[0].customer_id
-
+      console.log('Customer ID:', customerId) // เพิ่มตรงนี้
+      console.log('Product ID:', productId) // และตรงนี้
+      console.log('Quantity:', quantity) // และตร
       const response = await axios.put(
         'http://localhost:8000/cart/updateCartItem',
-        { productId, customerId, quantity },
+        {
+          product_id: productId,
+          customer_id: customerId,
+          quantity
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -134,11 +147,12 @@ export const actions = {
       const token = localStorage.getItem('token')
       const tokendecode = jwtDecode(token)
       const customerId = tokendecode[0].customer_id
-
+      console.log('Customer ID:', customerId) // เพิ่มตรงนี้
+      console.log('Product ID:', productId)
       const response = await axios.delete(
         'http://localhost:8000/cart/removeFromCart',
         {
-          data: { productId, customerId },
+          data: { product_id: productId, customer_id: customerId },
           headers: {
             Authorization: `Bearer ${token}`
           }

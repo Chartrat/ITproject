@@ -18,14 +18,14 @@
         <div class="info-block">
           <p>
             <strong>Status:</strong>
-            <input v-model="user.Status" :readonly="!editingField.status">
+            <input v-model="user.Status" :readonly="!editingField.Status">
           </p>
         </div>
 
         <div class="info-block">
           <p>
             <strong>Role:</strong>
-            <input v-model="user.Role" :readonly="!editingField.role">
+            <input v-model="user.Role" :readonly="!editingField.Role">
           </p>
         </div>
 
@@ -104,6 +104,7 @@
 
 <script>
 import axios from 'axios'
+import jwtDecode from 'jwt-decode' // ตรวจสอบให้แน่ใจว่าการนำเข้าใช้งานได้ถูกต้อง
 import AppHeader from '~/components/AppHeader.vue'
 
 export default {
@@ -116,9 +117,9 @@ export default {
       user: {},
       customer: {},
       editingField: {
-        userName: false,
-        status: false,
-        role: false,
+        UserName: false,
+        Status: false,
+        Role: false,
         firstName: false,
         lastName: false,
         email: false,
@@ -127,7 +128,8 @@ export default {
       }
     }
   },
-  created () {
+  mounted () {
+    console.log('Component mounted') // แสดงข้อความในคอนโซลเมื่อ component ถูก mount
     this.fetchProfileData()
   },
 
@@ -141,46 +143,55 @@ export default {
     async saveChanges (field) {
       try {
         const token = localStorage.getItem('token')
+        console.log('Token:', token) // แสดง token ในคอนโซล
+
         const UserID = this.getUserIdFromToken(token)
-        if (field in this.user) {
+        console.log('Extracted UserID:', UserID) // แสดง UserID ในคอนโซล
+
+        if (!UserID) {
+          console.error('Invalid UserID')
+          return
+        }
+
+        const headers = {
+          Authorization: `Bearer ${token}`
+        }
+        if (UserID) {
+          const customerData = {
+            ...this.customer
+          }
+          console.log('Customer data:', customerData) // แสดงข้อมูลลูกค้าที่จะส่งไปยัง backend
           await axios.put(
-            `http://localhost:8000/user/updateUser/${UserID}`,
-            this.user,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            }
-          )
-        } else if (field in this.customer) {
-          await axios.put(
-            `http://localhost:8000/user/updateCustomer/${UserID}`,
-            this.customer,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            }
+            `http://localhost:8000/user/users/${UserID}`, // ตรวจสอบเส้นทาง API ว่าถูกต้องหรือไม่
+            customerData,
+            { headers }
           )
         }
+
+        console.log(`Successfully updated ${field}`)
       } catch (error) {
         console.error('Error saving changes:', error)
       }
     },
     getUserIdFromToken (token) {
-      const payload = token.split('.')[1]
-      const decodedPayload = JSON.parse(atob(payload))
+      try {
+        const decoded = jwtDecode(token)
+        console.log('Decoded JWT:', decoded) // แสดงโครงสร้างของ decoded JWT
 
-      if (decodedPayload && decodedPayload[0]) {
-        return decodedPayload[0].UserID
+        // ดึง UserID จาก decoded[0].UserID
+        return decoded[0]?.UserID || null
+      } catch (error) {
+        console.error('Invalid token:', error)
+        return null
       }
-
-      return null
     },
     async fetchProfileData () {
       try {
         const token = localStorage.getItem('token')
+        console.log('Token:', token) // แสดง token ในคอนโซล
+
         const UserID = this.getUserIdFromToken(token)
+        console.log('Extracted UserID:', UserID) // แสดง UserID ในคอนโซล
 
         if (!UserID) {
           console.error('UserID is undefined or null')

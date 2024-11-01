@@ -34,6 +34,6 @@ main {
 
 body {
   margin: 0;
-  font-family: "Arial", sans-serif;
+  font-family: "Kanit", sans-serif;
 }
 </style>

@@ -15,12 +15,25 @@
             <h3>{{ item.name }}</h3>
             <p>จำนวน: {{ item.quantity }}</p>
             <p>ราคา: {{ item.price }} บาท</p>
+            <div class="quantity-controls">
+              <button @click="updateQuantity(item, item.quantity - 1)">
+                -
+              </button>
+              <span>{{ item.quantity }}</span>
+              <button @click="updateQuantity(item, item.quantity + 1)">
+                +
+              </button>
+              <button class="remove-button" @click="removeItem(item)">
+                ลบ
+              </button>
+            </div>
           </div>
           <div class="checkbox-container">
             <input v-model="selectedItems" type="checkbox" :value="item">
           </div>
         </li>
       </ul>
+
       <p class="cart-total">
         รวมทั้งหมด: {{ selectedTotal }} บาท
       </p>
@@ -40,32 +53,72 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import jwtDecode from 'jwt-decode'
+// import { params } from 'vee-validate/dist/types/rules/alpha'
 
 export default {
   data () {
     return {
-      selectedItems: [] // เก็บสินค้าที่ถูกเลือก
+      selectedItems: [],
+      token: ''
     }
   },
   computed: {
     ...mapGetters('cart', ['cartItems', 'cartTotal']),
     selectedTotal () {
-      // คำนวณยอดรวมของสินค้าที่ถูกเลือก
       return this.selectedItems.reduce((total, item) => {
         return total + item.price * item.quantity
       }, 0)
+    },
+    customerId () {
+      if (this.token) {
+        const decoded = jwtDecode(this.token)
+        return decoded.customer_id
+      }
+      return null
     }
   },
   mounted () {
-    this.fetchCart() // Fetch cart when the component mounts
-    console.log(this.cartItems)
+    this.token = localStorage.getItem('token')
+    this.fetchCart()
   },
   methods: {
-    ...mapActions('cart', ['fetchCart']),
+    ...mapActions('cart', ['fetchCart', 'updateCartItem', 'removeFromCart']),
+    async updateQuantity (item, newQuantity) {
+      if (newQuantity > 0) {
+        try {
+          await this.updateCartItem({
+            productId: item.productId,
+            quantity: newQuantity
+          })
+        } catch (error) {
+          console.error('Error updating cart item:', error)
+          alert('Cannot update cart item')
+        }
+      } else if (newQuantity === 0) {
+        try {
+          await this.removeFromCart(item.productId)
+        } catch (error) {
+          console.error('Error removing cart item:', error)
+          alert('Cannot remove cart item')
+        }
+      }
+    },
+    async removeItem (item) {
+      try {
+        await this.removeFromCart(item.productId)
+      } catch (error) {
+        console.error('Error removing cart item:', error)
+        alert('Cannot remove cart item')
+      }
+    },
     goToCheckout () {
-      // ส่งเฉพาะสินค้าที่ถูกเลือกไปยังหน้า checkout
+      if (this.selectedItems.length === 0) {
+        alert('Please select items before proceeding to checkout.')
+        return
+      }
       this.$router.push({
-        name: 'checkout', // ใช้ชื่อของ route ที่ตั้งไว้
+        name: 'checkout',
         params: {
           cartItems: this.selectedItems,
           cartTotal: this.selectedTotal
@@ -84,10 +137,11 @@ export default {
   background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Kanit", sans-serif;
 }
 
 .cart-title {
-  font-family: "Roboto", sans-serif;
+  font-family: "Kanit", sans-serif;
   font-size: 28px;
   color: #333;
   text-align: center;
@@ -133,6 +187,38 @@ export default {
   font-size: 14px;
   color: #666;
   margin: 5px 0;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+}
+
+.quantity-controls button {
+  background-color: #eee;
+  border: none;
+  padding: 5px 10px;
+  margin: 0 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.quantity-controls button:hover {
+  background-color: #ddd;
+}
+
+.remove-button {
+  background-color: #ff4d4f;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  margin-left: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  background-color: #ff7875;
 }
 
 .checkbox-container {

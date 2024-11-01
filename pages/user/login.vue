@@ -110,7 +110,7 @@ export default {
 }
 
 h2 {
-  font-family: "Playfair Display", serif;
+  font-family: "Kanit", sans-serif;
   font-size: 2rem;
   color: #333;
   margin-bottom: 1.5rem;

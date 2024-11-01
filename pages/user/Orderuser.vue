@@ -22,7 +22,7 @@
 
 <script>
 import axios from 'axios'
-import { jwtDecode } from 'jwt-decode'
+import jwtDecode from 'jwt-decode'
 
 export default {
   data () {
@@ -96,7 +96,10 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
-  font-family: "Prompt", sans-serif; /* ใช้ฟอนต์ที่เรียบง่ายและมีสไตล์ */
+  font-family: "Kanit", sans-serif; /* ใช้ฟอนต์ที่เรียบง่ายและมีสไตล์ */
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .order-card {
@@ -106,6 +109,7 @@ export default {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
 }
 
 .order-card:hover {
@@ -118,6 +122,7 @@ h1 {
   text-align: center;
   color: #333;
   margin-bottom: 40px;
+  font-family: "Kanit", sans-serif;
 }
 
 h3 {

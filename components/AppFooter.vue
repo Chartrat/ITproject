@@ -43,6 +43,7 @@ export default {
 
 <style scoped>
 .footer {
+  font-family: "Kanit", sans-serif;
   background-color: #222;
   color: #fff;
   padding: 20px 0;
