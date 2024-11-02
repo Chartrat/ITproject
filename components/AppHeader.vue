@@ -1,9 +1,9 @@
 <template>
   <header class="app-header">
     <nav class="navbar">
-      <h1>Master Home</h1>
+      <h1 @click="goHome" style="cursor: pointer">Master Home</h1>
       <ul class="nav-links">
-        <li>
+        <!-- <li>
           <input
             v-model="searchQuery"
             type="text"
@@ -11,7 +11,7 @@
             class="search-bar"
             @keypress.enter="performSearch"
           >
-        </li>
+        </li> -->
         <li>
           <router-link to="/">
             Home
@@ -127,8 +127,8 @@ export default {
       isMenuOpen: false,
       isDropdownOpen: false,
       isCartPreviewOpen: false,
-      Admin: '',
-      searchQuery: ''
+      Admin: ''
+      // searchQuery: ''
     }
   },
   computed: {
@@ -139,6 +139,9 @@ export default {
     this.Admin = role
   },
   methods: {
+    goHome () {
+      this.$router.push('/') // นำทางกลับไปที่หน้า Home
+    },
     toggleMenu () {
       this.isMenuOpen = !this.isMenuOpen
     },

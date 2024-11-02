@@ -15,6 +15,7 @@
             class="elevation-1"
             dense
             hide-default-footer
+            :items-per-page="-1"
           >
             <template #item="{ item }">
               <tr>

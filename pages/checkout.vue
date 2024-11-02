@@ -128,7 +128,7 @@ export default {
           formData.append('payment_date', new Date().toISOString())
           formData.append('amount', this.total)
           formData.append('payment_status', 'pending')
-          formData.append('paymentProof', this.paymentProof) // เพิ่มไฟล์
+          formData.append('paymentProof', this.paymentProof) // Add file
 
           // Send proof of payment with multipart/form-data
           const proofResponse = await this.$axios.post(
@@ -140,10 +140,16 @@ export default {
               }
             }
           )
+          console.log(proofResponse)
 
-          if (proofResponse.status === 200) {
-            alert('อัพโหลดหลักฐานการชำระเงินสำเร็จ')
-            this.$router.push('/user/Orderuser')
+          if (proofResponse.status === 201) {
+            alert('สั่งซื้อเสร็จเรียบร้อย โปรดรอการยืนยันจากแอดมิน')
+            const respondel = await this.$axios.delete(`http://localhost:8000/cart/clearCart/${customerId}/${orderId}`)
+            console.log(respondel)
+
+            if (respondel.status === 200) {
+              this.$router.push('/user/Orderuser')
+            }
           }
         } else {
           alert('การสร้างออเดอร์ล้มเหลว')

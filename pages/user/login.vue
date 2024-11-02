@@ -183,7 +183,7 @@ input:focus {
 }
 
 .error {
-  color: red;
+  color: white;
   margin-top: 1rem;
   font-weight: bold;
 }

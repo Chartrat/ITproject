@@ -5,6 +5,11 @@
       <h1>{{ product.name }}</h1>
       <p>{{ product.description }}</p>
       <p>ราคา: {{ product.price }} บาท</p>
+      <div class="button-container">
+        <button class="add-to-cart-btn" @click.stop="addToCart(product)">
+          <i class="fas fa-shopping-cart" /> เพิ่มลงตะกร้า
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -51,7 +56,9 @@ export default {
 
 .product-info {
   flex: 1; /* ข้อความใช้พื้นที่ที่เหลือ */
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 h1 {
@@ -72,5 +79,25 @@ p:last-child {
   font-size: 20px;
   color: #a67c52;
   font-weight: bold;
+}
+
+.button-container {
+  margin-top: auto;
+}
+
+.add-to-cart-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-family: "Kanit", sans-serif;
+  background-color: #ff5a5f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #ff3a3f;
 }
 </style>

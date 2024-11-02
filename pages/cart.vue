@@ -53,6 +53,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+// eslint-disable-next-line import/named
 import jwtDecode from 'jwt-decode'
 // import { params } from 'vee-validate/dist/types/rules/alpha'
 

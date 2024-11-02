@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { jwtDecode } from 'jwt-decode'
+import jwtDecode from 'jwt-decode'
 
 export const state = () => ({
   items: []
@@ -141,7 +141,30 @@ export const actions = {
       console.error('Error updating cart item:', error)
     }
   },
+  async clearCart () {
+    try {
+      const token = localStorage.getItem('token')
+      const tokendecode = jwtDecode(token)
+      const customerId = tokendecode[0].customer_id
 
+      const response = await this.$axios.delete(
+        `http://localhost:8000/cart/clearCart/${customerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      if (response.data.status === 'success') {
+        alert('ตะกร้าถูกล้างหลังจากชำระเงินสำเร็จ')
+      } else {
+        console.error('เกิดข้อผิดพลาดในการล้างตะกร้า:', response.data.message)
+      }
+    } catch (error) {
+      console.error('เกิดข้อผิดพลาดในการล้างตะกร้า:', error)
+    }
+  },
   async removeFromCart ({ commit }, productId) {
     try {
       const token = localStorage.getItem('token')

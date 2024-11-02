@@ -18,16 +18,10 @@
       <!-- ส่วนของแบนเนอร์ด้านข้าง -->
       <div class="sidebar">
         <div class="banner">
-          <img
-            src="https://i.pinimg.com/originals/d8/16/97/d81697f38d65bb260b46537b6773ec0a.gif"
-            alt="Banner 1"
-          >
+          <img src="@/assets/MAS5.jpg" alt="Banner 1">
         </div>
         <div class="banner">
-          <img
-            src="https://www.brownderosa.com/wp-content/uploads/2023/01/%E0%B8%84%E0%B8%B2%E0%B8%AA%E0%B8%B4%E0%B9%82%E0%B8%99%E0%B8%AD%E0%B8%AD%E0%B8%99%E0%B9%84%E0%B8%A5%E0%B8%99%E0%B9%8C%E0%B8%84%E0%B8%A3%E0%B8%9A%E0%B8%97%E0%B8%B8%E0%B8%81%E0%B8%84%E0%B9%88%E0%B8%B2%E0%B8%A2-1.1.gif"
-            alt="Banner 2"
-          >
+          <img src="@/assets/MAS6.jpg" alt="Banner 2">
         </div>
       </div>
     </div>
@@ -40,9 +34,9 @@ export default {
     return {
       currentSlide: 0,
       images: [
-        'https://media.assettype.com/outlookindia/2024-07/42f6cd75-2689-4a9b-b8be-9f4a2fe7fd5d/1.png?w=1200&h=675&fit=crop&crop=smart',
-        'https://static.wixstatic.com/media/c3bc47_73c03c0232cc48339913d2230a6b3c49~mv2.gif',
-        'https://www.sqlchick.com/wp-content/uploads/2024/10/slot_03.jpg'
+        require('@/assets/MASTERhome.jpg'),
+        require('@/assets/MAS2.jpg'),
+        require('@/assets/MAS3.jpg')
       ]
     }
   },

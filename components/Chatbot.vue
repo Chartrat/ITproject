@@ -101,7 +101,7 @@ export default {
         this.messages.push({
           sender: 'Bot',
           text: 'คุณต้องการทำอะไรต่อ?',
-          options: ['สอบถามข้อมูล', 'ติดต่อแอดมิน', 'tracking']
+          options: ['สอบถามข้อมูล', 'ติดต่อแอดมิน']
         })
       } else {
         this.awaitingOptions = false
@@ -215,7 +215,7 @@ export default {
         this.messages.push({
           sender: 'Bot',
           text: 'สวัสดี มีอะไรให้เราช่วย?',
-          options: ['สอบถามข้อมูล', 'ติดต่อแอดมิน', 'tracking'],
+          options: ['สอบถามข้อมูล', 'ติดต่อแอดมิน'],
           showOptions: true
         })
         this.awaitingOptions = true

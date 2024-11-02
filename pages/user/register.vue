@@ -21,6 +21,9 @@
               required
               placeholder="กรอกรหัสผ่าน"
             >
+            <p v-if="passwordError" class="error">
+              {{ passwordError }}
+            </p>
           </div>
         </div>
         <div class="input-group">
@@ -32,6 +35,9 @@
               required
               placeholder="กรอกอีเมล"
             >
+            <p v-if="emailError" class="error">
+              {{ emailError }}
+            </p>
           </div>
           <div class="column">
             <label for="firstName">ชื่อ:</label>
@@ -72,6 +78,9 @@
               required
               placeholder="กรอกเบอร์โทรศัพท์"
             >
+            <p v-if="phoneError" class="error">
+              {{ phoneError }}
+            </p>
           </div>
         </div>
         <p v-if="errorMessage" class="error">
@@ -115,11 +124,23 @@ export default {
       address: '',
       phoneNumber: '',
       errorMessage: '',
-      successMessage: '' // เพิ่มการแสดงข้อความสำเร็จ
+      successMessage: '', // เพิ่มการแสดงข้อความสำเร็จ
+      passwordError: '',
+      emailError: '',
+      phoneError: ''
     }
   },
   methods: {
     async register () {
+      // ตรวจสอบข้อมูลก่อนส่ง
+      if (
+        !this.validateEmail() ||
+        !this.validatePassword() ||
+        !this.validatePhoneNumber()
+      ) {
+        return
+      }
+
       try {
         const response = await axios.post(
           'http://localhost:8000/user/CreateUser',
@@ -146,6 +167,34 @@ export default {
         console.error(error)
         this.errorMessage = 'ชื่อผู้ใช้หรืออีเมลมีอยู่แล้ว กรุณาเลือกอันใหม่'
       }
+    },
+    validateEmail () {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/
+      if (!emailRegex.test(this.email)) {
+        this.emailError = 'อีเมลต้องเป็น @gmail.com เท่านั้น'
+        return false
+      }
+      this.emailError = ''
+      return true
+    },
+    validatePassword () {
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/
+      if (!passwordRegex.test(this.password)) {
+        this.passwordError =
+          'รหัสผ่านต้องมีอักษรตัวใหญ่ ตัวเล็ก และตัวเลขอย่างน้อย 8 ตัวอักษร'
+        return false
+      }
+      this.passwordError = ''
+      return true
+    },
+    validatePhoneNumber () {
+      const phoneRegex = /^0\d{9}$/
+      if (!phoneRegex.test(this.phoneNumber)) {
+        this.phoneError = 'เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักและขึ้นต้นด้วย 0'
+        return false
+      }
+      this.phoneError = ''
+      return true
     },
     goToLogin () {
       this.$router.push('/user/login')
@@ -262,7 +311,7 @@ input:focus {
 
 /* ข้อความผิดพลาด */
 .error {
-  color: red;
+  color: white;
   margin-top: 1rem;
   font-weight: bold;
 }
